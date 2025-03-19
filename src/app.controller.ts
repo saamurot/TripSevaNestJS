@@ -1,12 +1,13 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { AppService } from './app.service';
 import axios from 'axios';
-import { from } from 'rxjs';
 const crypto = require('crypto');
 
 const HOTELBEDS_BASE_URL = "https://api.test.hotelbeds.com";
-const HOTELBEDS_CLIENT_ID = "531c46fc346c6729b9e9094f65abef70";
-const HOTELBEDS_CLIENT_SECRET = "1e83c000f3";
+// const HOTELBEDS_CLIENT_ID = "531c46fc346c6729b9e9094f65abef70";
+// const HOTELBEDS_CLIENT_SECRET = "1e83c000f3";
+const HOTELBEDS_CLIENT_ID = "e8519893a3aad3e0b659d7bfa14e049d";
+const HOTELBEDS_CLIENT_SECRET = "71871f2386";
 
 @Controller()
 export class AppController {
@@ -51,7 +52,7 @@ export class AppController {
       };
 
       const response = await fetch(
-        "https://api.test.hotelbeds.com/hotel-content-api/1.0/locations/destinations?fields=all&countryCodes=IN&language=ENG&from=1&to=361&useSecondaryLanguage=false",
+        `${HOTELBEDS_BASE_URL}/hotel-content-api/1.0/locations/destinations?fields=all&countryCodes=IN&language=ENG&from=1&to=361&useSecondaryLanguage=false`,
         requestOptions
       );
       // console.log(response);
@@ -92,7 +93,7 @@ export class AppController {
       };
 
       const response = await fetch(
-        `https://api.test.hotelbeds.com/hotel-content-api/1.0/hotels?fields=all&destinationCode=${destinationCode}&language=ENG&from=${from}&to=${to}&useSecondaryLanguage=false`,
+        `${HOTELBEDS_BASE_URL}/hotel-content-api/1.0/hotels?fields=all&destinationCode=${destinationCode}&language=ENG&from=${from}&to=${to}&useSecondaryLanguage=false`,
         requestOptions
       );
       // console.log(response);
@@ -133,7 +134,7 @@ export class AppController {
       };
 
       const response = await fetch(
-        `https://api.test.hotelbeds.com/hotel-content-api/1.0/hotels/${hotelCode}/details?language=ENG&useSecondaryLanguage=False`,
+        `${HOTELBEDS_BASE_URL}/hotel-content-api/1.0/hotels/${hotelCode}/details?language=ENG&useSecondaryLanguage=False`,
         requestOptions
       );
       // console.log(response);
