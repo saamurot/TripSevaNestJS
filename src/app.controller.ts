@@ -4,10 +4,10 @@ import axios from 'axios';
 const crypto = require('crypto');
 
 const HOTELBEDS_BASE_URL = "https://api.test.hotelbeds.com";
-// const HOTELBEDS_CLIENT_ID = "531c46fc346c6729b9e9094f65abef70";
-// const HOTELBEDS_CLIENT_SECRET = "1e83c000f3";
-const HOTELBEDS_CLIENT_ID = "e8519893a3aad3e0b659d7bfa14e049d";
-const HOTELBEDS_CLIENT_SECRET = "71871f2386";
+const HOTELBEDS_CLIENT_ID = "531c46fc346c6729b9e9094f65abef70";
+const HOTELBEDS_CLIENT_SECRET = "1e83c000f3";
+// const HOTELBEDS_CLIENT_ID = "e8519893a3aad3e0b659d7bfa14e049d";
+// const HOTELBEDS_CLIENT_SECRET = "71871f2386";
 
 @Controller()
 export class AppController {
