@@ -9,6 +9,16 @@ const HOTELBEDS_CLIENT_SECRET = "1e83c000f3";
 // const HOTELBEDS_CLIENT_ID = "e8519893a3aad3e0b659d7bfa14e049d";
 // const HOTELBEDS_CLIENT_SECRET = "71871f2386";
 
+//vonage
+import { Auth } from '@vonage/auth';
+import { Vonage } from '@vonage/server-sdk';
+import { MediaMode } from '@vonage/video';
+
+// Replace with your actual API Key, Application ID, and the path to your private key file
+// const apiKey = 'fdea1466';
+// const applicationId = '0b678a93-c8b3-4138-95e8-d42f67d3a67d';
+const privateKeyPath = './private.key'; // Update this with the actual path
+
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) { }
@@ -146,6 +156,35 @@ export class AppController {
       // console.log(result);
       return result;
     } catch (error) {
+      console.error(error);
+    }
+  }
+
+  @Get('/CreateVonageSession')
+  async CreateVonageSession(@Query('applicationId') applicationId: any) {
+    const credentials = new Auth({
+      applicationId: applicationId,
+      privateKey: privateKeyPath,
+    });
+
+    const vonage = new Vonage(credentials);
+    try {
+      const response = await vonage.video.createSession({
+        mediaMode: MediaMode.ROUTED, // Or MediaMode.RELAYED
+      });
+      console.log('Vonage Session created successfully:');
+      console.log('Session ID:', response);
+
+      const options = {
+        role: "moderator",
+        expireTime: new Date().getTime() / 1000 + 7 * 24 * 60 * 60, // in one week
+        data: "name=Johnny",
+        initialLayoutClassList: ["focus"]
+      }
+      const token = vonage.video.generateClientToken(response.sessionId, options);
+      return { sessionID: response.sessionId, token: token };
+    } catch (error: any) {
+      console.error('Error creating Vonage Session:', error);
       console.error(error);
     }
   }
