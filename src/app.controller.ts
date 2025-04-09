@@ -177,7 +177,7 @@ export class AppController {
 
       const options = {
         role: "moderator",
-        expireTime: new Date().getTime() / 1000 + 7 * 24 * 60 * 60, // in one week
+        expireTime: ((new Date().getTime() / 1000) + 7) * 24 * 60 * 60, // in one week
         data: "name=Johnny",
         initialLayoutClassList: ["focus"]
       }
