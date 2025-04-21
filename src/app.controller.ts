@@ -13,11 +13,18 @@ const HOTELBEDS_CLIENT_SECRET = "1e83c000f3";
 import { Auth } from '@vonage/auth';
 import { Vonage } from '@vonage/server-sdk';
 import { MediaMode } from '@vonage/video';
+import { Video } from '@vonage/video';
 
 // Replace with your actual API Key, Application ID, and the path to your private key file
 // const apiKey = 'fdea1466';
-// const applicationId = '0b678a93-c8b3-4138-95e8-d42f67d3a67d';
+const applicationId = '0b678a93-c8b3-4138-95e8-d42f67d3a67d';
 const privateKeyPath = './private.key'; // Update this with the actual path
+
+const OpenTok = require('opentok');
+
+// Replace with your actual Vonage Video API credentials
+const apiKey = 'fdea1466';
+const apiSecret = 'yRBYJH35uSjBPxF0';
 
 @Controller()
 export class AppController {
@@ -161,7 +168,7 @@ export class AppController {
   }
 
   @Get('/CreateVonageSession')
-  async CreateVonageSession(@Query('applicationId') applicationId: any) {
+  async CreateVonageSession() {
     const credentials = new Auth({
       applicationId: applicationId,
       privateKey: privateKeyPath,
@@ -186,6 +193,6 @@ export class AppController {
     } catch (error: any) {
       console.error('Error creating Vonage Session:', error);
       console.error(error);
-    }
+    }  
   }
 }
