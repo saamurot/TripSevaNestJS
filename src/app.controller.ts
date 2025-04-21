@@ -1,7 +1,9 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Res } from '@nestjs/common';
 import { AppService } from './app.service';
 import axios from 'axios';
 const crypto = require('crypto');
+import * as puppeteer from 'puppeteer';
+import { Response } from 'express';
 
 const HOTELBEDS_BASE_URL = "https://api.test.hotelbeds.com";
 const HOTELBEDS_CLIENT_ID = "531c46fc346c6729b9e9094f65abef70";
@@ -14,13 +16,14 @@ import { Auth } from '@vonage/auth';
 import { Vonage } from '@vonage/server-sdk';
 import { MediaMode } from '@vonage/video';
 import { Video } from '@vonage/video';
+import * as OpenTok from 'opentok';
 
 // Replace with your actual API Key, Application ID, and the path to your private key file
 // const apiKey = 'fdea1466';
 const applicationId = '0b678a93-c8b3-4138-95e8-d42f67d3a67d';
 const privateKeyPath = './private.key'; // Update this with the actual path
 
-const OpenTok = require('opentok');
+// const OpenTok = require('opentok');
 
 // Replace with your actual Vonage Video API credentials
 const apiKey = 'fdea1466';
@@ -28,7 +31,15 @@ const apiSecret = 'yRBYJH35uSjBPxF0';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) { }
+
+  private opentok: OpenTok;
+
+  constructor(private readonly appService: AppService) {
+    this.opentok = new OpenTok(
+      apiKey,
+      apiSecret
+    );
+  }
 
   @Get()
   getHello(): string {
@@ -193,6 +204,52 @@ export class AppController {
     } catch (error: any) {
       console.error('Error creating Vonage Session:', error);
       console.error(error);
-    }  
+    }
   }
+
+  @Post('downloadPdf')
+  async downloadPdf(@Body('html') html: string, @Res() res: Response) {
+
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+    const page = await browser.newPage();
+
+    await page.setContent(html, { waitUntil: 'load' });
+
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      displayHeaderFooter: false,
+      headerTemplate: `
+        <div style="font-size: 12px; text-align: center; width: 100%; padding: 10px;">
+          <span class="title">My Custom Header</span>
+        </div>
+      `,
+      footerTemplate: `
+        <div style="font-size: 12px; text-align: center; width: 100%; padding: 10px;">
+          <span class="pageNumber"></span> of <span class="totalPages"></span>
+        </div>
+      `,
+      margin: {
+        top: '50px', // space for header
+        bottom: '50px', // space for footer
+        right: '50px', 
+        left: '50px'
+      },
+    });
+
+    await browser.close();
+
+    if (!pdfBuffer || pdfBuffer.length === 0) {
+      return res.status(500).send('Failed to generate PDF');
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="example.pdf"');
+    res.setHeader('Content-Length', pdfBuffer.length.toString());
+    res.end(pdfBuffer);
+  }
+
 }
