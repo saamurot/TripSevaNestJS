@@ -13,14 +13,15 @@ const HOTELBEDS_CLIENT_SECRET = "1e83c000f3";
 
 //vonage
 import { Auth } from '@vonage/auth';
-import { Vonage } from '@vonage/server-sdk';
+// import { Vonage } from '@vonage/server-sdk';
+const { Vonage } = require('@vonage/server-sdk');
 import { MediaMode } from '@vonage/video';
 import { Video } from '@vonage/video';
 import * as OpenTok from 'opentok';
 
 // Replace with your actual API Key, Application ID, and the path to your private key file
 // const apiKey = 'fdea1466';
-const applicationId = '0b678a93-c8b3-4138-95e8-d42f67d3a67d';
+const applicationId = 'c683ca6b-bb16-4b68-af2f-d8caedfd36e1';
 const privateKeyPath = './private.key'; // Update this with the actual path
 
 // const OpenTok = require('opentok');
@@ -214,7 +215,6 @@ export class AppController {
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
-    
     const page = await browser.newPage();
 
     await page.setContent(html, { waitUntil: 'load' });
