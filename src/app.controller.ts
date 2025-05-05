@@ -18,6 +18,7 @@ const { Vonage } = require('@vonage/server-sdk');
 import { MediaMode } from '@vonage/video';
 import { Video } from '@vonage/video';
 import * as OpenTok from 'opentok';
+import { lastValueFrom } from 'rxjs';
 
 // Replace with your actual API Key, Application ID, and the path to your private key file
 // const apiKey = 'fdea1466';
@@ -195,7 +196,7 @@ export class AppController {
       console.log('Session ID:', response);
 
       const options = {
-        role: "administrator",
+        role: "moderator",
         expireTime: ((new Date().getTime() / 1000) + 7) * 24 * 60 * 60, // in one week
         data: "name=Johnny",
         initialLayoutClassList: ["focus"]
@@ -207,6 +208,81 @@ export class AppController {
       console.error(error);
     }
   }
+
+  @Post('/startVonageArchive')
+  async startVonageArchive(@Body() data) {
+    console.log('Received sessionId:', data.sessionId);
+    try {
+      const credentials = new Auth({
+        applicationId: applicationId,
+        privateKey: privateKeyPath,
+      });
+
+      const vonage = new Vonage(credentials);
+      return await vonage.video.startArchive(data.sessionId, {
+        name: data.archiveName,
+        outputMode: 'composed', // optional, but often needed
+      });
+    } catch (error) {
+      console.error('Error starting archive:', error);
+      throw new Error('Failed to start archive');
+    }
+  }
+
+  @Get('/stopVonageArchive')
+  async stopVonageArchive(@Query('archiveId') archiveId: any) {
+    try {
+      const credentials = new Auth({
+        applicationId: applicationId,
+        privateKey: privateKeyPath,
+      });
+
+      const vonage = new Vonage(credentials);
+      await vonage.video.stopArchive(archiveId);
+      return "Stopped";
+    } catch (error) {
+      console.error('Error starting archive:', error);
+      throw new Error('Failed to start archive');
+    }
+  }
+
+
+
+  @Get('/getVonageArchive')
+  async getVonageArchive(@Query('archiveId') archiveId: any) {
+    try {
+      const credentials = new Auth({
+        applicationId: applicationId,
+        privateKey: privateKeyPath,
+      });
+
+      const vonage = new Vonage(credentials);
+      return await vonage.video.getArchive(archiveId);
+    } catch (error) {
+      console.error('Error starting archive:', error);
+      throw new Error('Failed to start archive');
+    }
+  }
+
+  @Post('/downloadRecording')
+  async downloadRecording(@Body() body: { archiveUrl: string }, @Res() res: Response) {
+    const { archiveUrl } = body;
+
+    try {
+      const response = await axios.get(archiveUrl, { responseType: 'stream' });
+
+      res.set({
+        'Content-Type': response.headers['content-type'] || 'application/octet-stream',
+        'Content-Disposition': 'attachment; filename="archive.mp4"',
+      });
+      response.data.pipe(res);
+    } 
+    catch (error) {
+      console.error('Failed to download archive:', error);
+      res.status(500).send('Failed to download archive');
+    }
+  }
+
 
   @Post('downloadPdf')
   async downloadPdf(@Body('html') html: string, @Res() res: Response) {
@@ -236,7 +312,7 @@ export class AppController {
       margin: {
         top: '50px', // space for header
         bottom: '50px', // space for footer
-        right: '50px', 
+        right: '50px',
         left: '50px'
       },
     });
