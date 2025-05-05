@@ -195,7 +195,7 @@ export class AppController {
       console.log('Session ID:', response);
 
       const options = {
-        role: "moderator",
+        role: "administrator",
         expireTime: ((new Date().getTime() / 1000) + 7) * 24 * 60 * 60, // in one week
         data: "name=Johnny",
         initialLayoutClassList: ["focus"]
