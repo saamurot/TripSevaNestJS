@@ -276,7 +276,7 @@ export class AppController {
         'Content-Disposition': 'attachment; filename="archive.mp4"',
       });
       response.data.pipe(res);
-    } 
+    }
     catch (error) {
       console.error('Failed to download archive:', error);
       res.status(500).send('Failed to download archive');
@@ -327,6 +327,22 @@ export class AppController {
     res.setHeader('Content-Disposition', 'attachment; filename="example.pdf"');
     res.setHeader('Content-Length', pdfBuffer.length.toString());
     res.end(pdfBuffer);
+  }
+
+  @Post('/createStripePaymentIntent')
+  async createStripePaymentIntent(@Body() body) {
+
+    const stripe = require('stripe')(body.key);
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: body.amount,
+      currency: body.currency,
+      payment_method_types: ['card'],
+      automatic_payment_methods: {
+        enabled: false,
+      },
+    });
+    return paymentIntent;
   }
 
 }
