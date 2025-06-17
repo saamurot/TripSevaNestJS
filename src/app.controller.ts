@@ -5,6 +5,10 @@ const crypto = require('crypto');
 import * as puppeteer from 'puppeteer';
 import { Response } from 'express';
 
+import * as fs from 'fs';
+import * as path from 'path';
+import * as pdf from 'html-pdf-node';
+
 const HOTELBEDS_BASE_URL = "https://api.test.hotelbeds.com";
 const HOTELBEDS_CLIENT_ID = "531c46fc346c6729b9e9094f65abef70";
 const HOTELBEDS_CLIENT_SECRET = "1e83c000f3";
@@ -283,9 +287,24 @@ export class AppController {
     }
   }
 
+  @Post('/createStripePaymentIntent')
+  async createStripePaymentIntent(@Body() body) {
 
-  @Post('downloadPdf')
-  async downloadPdf(@Body('html') html: string, @Res() res: Response) {
+    const stripe = require('stripe')(body.key);
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: body.amount,
+      currency: body.currency,
+      payment_method_types: ['card'],
+      automatic_payment_methods: {
+        enabled: false,
+      },
+    });
+    return paymentIntent;
+  }
+
+  @Post('downloadPdfPup')
+  async downloadPdfPup(@Body('html') html: string, @Res() res: Response) {
 
     const browser = await puppeteer.launch({
       headless: true,
@@ -298,7 +317,7 @@ export class AppController {
     const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
-      displayHeaderFooter: false,
+      displayHeaderFooter: true,
       headerTemplate: `
         <div style="font-size: 12px; text-align: center; width: 100%; padding: 10px;">
           <span class="title">My Custom Header</span>
@@ -329,20 +348,36 @@ export class AppController {
     res.end(pdfBuffer);
   }
 
-  @Post('/createStripePaymentIntent')
-  async createStripePaymentIntent(@Body() body) {
+  @Post('downloadPdf')
+  async downloadPdf(@Body('html') html: string, @Res() res: Response) {
+    const file = { content: html };
+    const options = {
+      format: 'A4',
+      printBackground: true,
+      displayHeaderFooter: true,
+      footerTemplate: `
+        <div style="font-size: 12px; text-align: center; width: 100%; padding: 10px;">
+          <span class="pageNumber"></span> of <span class="totalPages"></span>
+        </div>
+      `,
+      headerTemplate: `<div></div>`, // Empty header if not needed
+      margin: {
+        top: '50px',
+        bottom: '50px',
+        right: '50px',
+        left: '50px'
+      }
+    };
 
-    const stripe = require('stripe')(body.key);
-
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: body.amount,
-      currency: body.currency,
-      payment_method_types: ['card'],
-      automatic_payment_methods: {
-        enabled: false,
-      },
-    });
-    return paymentIntent;
+    try {
+      const buffer = await pdf.generatePdf(file, options);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename="example.pdf"');
+      res.end(buffer);
+    } catch (err) {
+      console.error('PDF generation failed:', err);
+      res.status(500).send('Failed to generate PDF');
+    }
   }
 
 }
