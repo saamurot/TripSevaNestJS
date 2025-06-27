@@ -355,12 +355,13 @@ export class AppController {
   }
 
   @Post('downloadPdf')
-  async downloadPdf(@Body('html') html: string, @Res() res: Response) {
-    const file = { content: html };
+  async downloadPdf(@Body() body, @Res() res: Response) {
+    const file = { content: body.html };
     const options = {
       format: 'A4',
+      landscape: body?.type == 'l' ? true : false,
       printBackground: true,
-      displayHeaderFooter: true,
+      displayHeaderFooter: false,
       footerTemplate: `
         <div style="font-size: 12px; text-align: center; width: 100%; padding: 10px;">
           <span class="pageNumber"></span> of <span class="totalPages"></span>
@@ -368,10 +369,10 @@ export class AppController {
       `,
       headerTemplate: `<div></div>`, // Empty header if not needed
       margin: {
-        top: '50px',
-        bottom: '50px',
-        right: '50px',
-        left: '50px'
+        top: '25px',
+        bottom: '25px',
+        right: '25px',
+        left: '25px'
       }
     };
 
