@@ -35,10 +35,16 @@ const privateKeyPath = './private.key'; // Update this with the actual path
 const apiKey = 'fdea1466';
 const apiSecret = 'yRBYJH35uSjBPxF0';
 
+import { v4 as uuidv4 } from 'uuid';
+
 @Controller()
 export class AppController {
 
   private opentok: OpenTok;
+
+  private accessToken = "EAAAl_vQ0NifjjW03TGc3G_WjtEmEPGnUfpPndF-OmFmUZb30NkUth3-tSQTly0i";
+  private locationId = "L4QWANXMKGRVW";
+  private baseURL = 'https://connect.squareupsandbox.com';
 
   constructor(private readonly appService: AppService) {
     this.opentok = new OpenTok(
@@ -378,6 +384,44 @@ export class AppController {
       console.error('PDF generation failed:', err);
       res.status(500).send('Failed to generate PDF');
     }
+  }
+
+  @Post('/createSquarePayment')
+  async createSquarePayment(@Body() body) {
+
+    try {
+      const response = await axios.post(
+        `${this.baseURL}/v2/payments`,
+        {
+          source_id: body.nonce,
+          idempotency_key: uuidv4(),
+          amount_money: {
+            amount: body.amount, // in cents
+            currency: 'AUD',
+          },
+          location_id: this.locationId,
+        },
+        {
+          headers: {
+            'Square-Version': '2023-05-17',
+            Authorization: `Bearer ${this.accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      const payment = response.data.payment;
+      return {
+        success: true,
+        paymentId: payment.id,
+        status: payment.status,
+      };
+    } catch (err: any) {
+      const errors = err.response?.data?.errors?.map((e: any) => e.detail).join(', ') ||
+        err.message;
+      return { success: false, error: errors };
+    }
+
   }
 
 }

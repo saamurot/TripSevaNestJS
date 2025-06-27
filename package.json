@@ -35,7 +35,9 @@
     "puppeteer": "^24.10.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
-    "stripe": "^18.2.1"
+    "square": "^43.0.0",
+    "stripe": "^18.2.1",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
