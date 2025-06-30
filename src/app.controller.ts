@@ -42,10 +42,6 @@ export class AppController {
 
   private opentok: OpenTok;
 
-  private accessToken = "EAAAl_vQ0NifjjW03TGc3G_WjtEmEPGnUfpPndF-OmFmUZb30NkUth3-tSQTly0i";
-  private locationId = "L4QWANXMKGRVW";
-  private baseURL = 'https://connect.squareupsandbox.com';
-
   constructor(private readonly appService: AppService) {
     this.opentok = new OpenTok(
       apiKey,
@@ -392,7 +388,7 @@ export class AppController {
 
     try {
       const response = await axios.post(
-        `${this.baseURL}/v2/payments`,
+        `${body.baseURL}`,
         {
           source_id: body.nonce,
           idempotency_key: uuidv4(),
@@ -400,12 +396,12 @@ export class AppController {
             amount: body.amount, // in cents
             currency: 'AUD',
           },
-          location_id: this.locationId,
+          location_id: body.locationID,
         },
         {
           headers: {
             'Square-Version': '2023-05-17',
-            Authorization: `Bearer ${this.accessToken}`,
+            Authorization: `Bearer ${body.accessToken}`,
             'Content-Type': 'application/json',
           },
         },
